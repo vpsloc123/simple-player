@@ -1,0 +1,63 @@
+*{
+	margin: 0;
+	padding: 0;
+}
+body{
+	height: 1500px;
+}
+div{
+	margin-bottom: 15px;
+}
+#start{
+	width: 50px;
+	height: 20px;
+	background: yellow;
+	text-align: center;
+}
+#top{
+	width: 50px;
+	height: 20px;
+	background: red;
+	text-align: center;
+}
+#bottom{
+	width: 50px;
+	height: 20px;
+	background: brown;
+	text-align: center;
+}
+
+#mute{
+	width: 50px;
+	height: 20px;
+	background: blue;
+	text-align: center;
+}
+#musicAudioTime{
+	width: 100px;
+	height: 20px;
+	background: green;
+	text-align: center;
+}
+#loopplayback{
+	width: 100px;
+	height: 20px;
+	background: pink;
+	text-align: center;
+}
+#progress{
+	width: 500px;
+	height: 20px;
+	background: grey;
+	position: relative;
+}
+#progressBtn{
+	width: 20px;
+	height: 20px;
+	background: black;
+	position: absolute;
+}
+#progressBar{
+	height: 20px;
+	background: purple;
+}

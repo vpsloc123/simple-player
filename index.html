@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<link rel="stylesheet" type="text/css" href="./index.css">
+	<title></title>
+</head>
+<body>
+	<div class="main">
+		<audio id="audio" ></audio>
+
+		<div>
+			<div id="start">播放</div>
+			<div id="top" >上一首</div>
+			<div id="bottom" >下一首</div>
+			<div id="mute">静音</div>
+			<div id="musicAudioTime">
+				<span id="currentTime">00:00</span>
+				 <span>&#47;</span> 
+				<span id="totalTime">00:00</span>
+			</div>
+			<div id="loopplayback">循环播放</div>
+			<div id="progress">
+				<p id="progressBtn" style="left: 0;"></p>
+				<p id="progressBar" style="width: 0"></p>
+			</div>
+
+		</div>
+	</div>
+
+	<script type="text/javascript">
+		var start= document.getElementById('start');
+		var audio= document.getElementById('audio');
+		var topBtn= document.getElementById('top');
+		var bottomBtn= document.getElementById('bottom');
+		var loudspeakerMute= document.getElementById('mute');
+		var currentTime= document.getElementById('currentTime');
+		var totalTime= document.getElementById('totalTime');
+		var progressBtn= document.getElementById('progressBtn');
+		var progress= document.getElementById('progress');
+		var progressBar= document.getElementById('progressBar');
+		var loopPlayback = document.getElementById('loopplayback');
+		var	averageLeft = 0;//记录进度
+		var setProgressLeft = null;//进度条容器
+		var setLoopPlayback = null;//循环开关
+		var falg = false;
+		var songList = [
+			{url:"1.mp3"},
+			{url:"2.mp3"},
+			{url:"3.mp3"},
+			{url:"4.mp3"},
+			{url:"5.mp3"},
+			{url:"6.mp3"},
+		]
+		audio.src = "./music/"+ songList[0].url;
+
+		start.onclick = function() {
+			if (audio.paused) {
+				start.innerHTML = "开始";
+				audio.play();
+				totalTimes();
+				currentTimes();
+				//判断当前是否正在播放 
+				progressLeft();
+				return;
+			}
+			start.innerHTML = "暂停";
+			audio.pause();
+			clearInterval(setProgressLeft);
+		}
+
+		//循环播放
+		loopPlayback.onclick = function() {
+			if (falg) {
+				clearInterval(setLoopPlayback);
+			}
+			setLoopPlayback = setInterval(function(){
+				if (audio.currentTime === audio.duration) {
+					switchSong(1)
+				}
+			},1000)
+			loopPlayback.innerHTML = falg?"关闭循环播放" : "开启循环播放" 
+			falg =!falg;
+		}
+
+		//上一首
+		topBtn.onclick = function() {
+			switchSong(-1)
+		}
+
+		//下一首
+		bottomBtn.onclick = function() {
+			switchSong(1)
+		}	
+
+		//切换歌曲
+		function switchSong(num) {
+			for(var i=0;i<songList.length;i++) {
+				if (audio.src.split("/")[9] === songList[i].url) {
+					audio.src = "./music/"+ songList[i+num].url;
+					if (audio.src.split("/")[9] === songList[5].url) {
+						audio.src = "./music/"+ songList[0].url;
+					}
+					if (audio.src.split("/")[9] === songList[0].url) {
+						audio.src = "./music/"+ songList[5].url;
+					}
+					//音频重加载
+					audio.load();
+					//获取audio.duration属性
+					audio.oncanplay = function () { 
+						//清零
+						averageLeft = 0;
+						progressLeft();
+    					totalTimes();
+						currentTimes();
+						audio.play();
+						if (audio.paused) {
+							clearInterval(setProgressLeft);
+						}
+					}
+					return
+				}
+			}
+		}
+
+
+
+		//设置静音
+		loudspeakerMute.onclick = function() {
+			if (audio.muted) {
+				audio.muted = false;
+			}
+			else{
+				audio.muted = true;
+			}
+		}
+
+		//进度条
+		function progressLeft() {
+			var allLeft = progress.offsetWidth-progressBtn.offsetWidth;
+			setProgressLeft = setInterval(function(){
+					averageLeft += parseInt(allLeft/audio.duration*100)/10000;
+					progressBtn.style.left = averageLeft + "px";
+					progressBar.style.width = averageLeft + "px";
+				if(audio.paused){					
+					clearInterval(setProgressLeft);
+				}
+				if (parseInt(progressBtn.style.left) === allLeft) {
+					clearInterval(setProgressLeft);
+					averageLeft = 0;
+				}
+			},10)
+		} 
+
+		//手动操作进度条
+		// progressBtn.onmousedown = function(e) {
+		// 	console.log(1)
+		// 	clearInterval(setProgressLeft)
+		// 	var num =e.pageX - progressBtn.offsetLeft;
+		// 	document.body.onmousemove = function(e){
+		// 		console.log(3)
+		// 		var left  = e.pageX;
+		// 		progressBtn.style.left = left - num + "px";
+		// 		progressBar.style.width = left - num + "px";
+		// 		if (parseInt(progressBtn.style.left) <= 0) {
+		// 			progressBtn.style.left = 0;
+		// 			progressBar.style.width = 0;
+		// 		}
+		// 		if (parseInt(progressBtn.style.left) >= progress.offsetWidth-progressBtn.offsetWidth) {
+		// 			progressBtn.style.left = progress.offsetWidth-progressBtn.offsetWidth + "px";
+		// 			progressBar.style.width = progress.offsetWidth-progressBtn.offsetWidth + "px";
+		// 			}
+		// 		}
+		// 	}
+
+		// //进度条移出事件	
+		// progressBtn.onmouseup = function(){
+		// 	console.log(2)
+		// 	var allLeft = progress.offsetWidth-progressBtn.offsetWidth;
+		// 	document.body.onmousemove = null;
+		// 	audio.currentTime = progressBtn.offsetLeft/(allLeft/audio.duration);
+		// 	averageLeft = progressBtn.offsetLeft;
+		// 	audio.paused = false;
+		// 	progressLeft()
+		// }
+
+		//当前时间
+		function currentTimes() {
+			var setCurrentTimes = setInterval(function(){
+				var nowTime = parseInt(audio.currentTime+0.2);
+				var s,m;
+				if (nowTime < 10) {
+					s = "0" + nowTime;
+					m = "00";
+				}
+				else if (nowTime < 60) {
+					s = nowTime;
+					m = "00";
+				}
+				else {
+					m = "0" + parseInt(nowTime/60);
+					if (parseInt(nowTime%60)== 0) {
+						s = "00";
+					}
+					else if (parseInt(nowTime%60)<10) {
+						s = "0" + parseInt(nowTime%60);
+					}
+					else {
+						s = parseInt(nowTime%60);
+					}
+				}
+				currentTime.innerHTML = m + ":" + s;
+				//判断当前时间与总时间是否相等 true则停止计数
+				if (currentTime.innerHTML >= totalTime.innerHTML) {
+					clearInterval(setCurrentTimes)
+				}
+			},1000)
+		}
+
+		// 歌曲总时间
+		function totalTimes() {
+			var mTime = parseInt(audio.duration/60);
+			var sTime = parseInt(audio.duration%60);
+			var s,m;
+			if (mTime<0) {
+				m = "00";
+			}
+			else if (mTime<=9) {
+				m = "0" +mTime; 
+			}
+			else {
+				m = mTime;
+			}
+			if (sTime==0) {
+				s = "00";
+			}
+			else if (sTime<=9) {
+				s = "0" +sTime; 
+			}
+			else {
+				s = sTime;
+			}
+			totalTime.innerHTML = m + ":" + s;
+		}
+
+
+	</script>
+</body>
+</html>
